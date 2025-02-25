@@ -1,5 +1,6 @@
 #pip install pdfplumber
 #pip install pandas
+#pip install matplotlib
 
 #%%
 
@@ -7,6 +8,7 @@ import os
 import pandas as pd
 import pdfplumber
 from tqdm import tqdm
+import matplotlib.pyplot as plt
 
 #%%
 
@@ -20,7 +22,7 @@ def extrair_linha(texto, palavras_chave):
     return None  # Retorna None se nenhuma linha for encontrada
 
 #%%
-print('oi')
+
 # Carregar as palavras-chave
 palavras_chave = pd.read_csv("valores_unicos_provas.csv")['Provas'].tolist()
 
@@ -97,15 +99,66 @@ for file in pdfs:
 print('Done')
 print(f'Pages with error: {errors}')
 
+#%%
 
+# Função para mesclar colunas de datas de nascimento
+def merge_date_columns(final):
+    final['Dt Nascimento'] = final['Dt Nascimento'].combine_first(final['Dt Nasc.'])
+    final['Dt Nascimento'] = final['Dt Nascimento'].combine_first(final['Dt. Nasc'])
+    final['Dt Nascimento'] = final['Dt Nascimento'].combine_first(final['Dt Nasc'])
+    final = final.drop(columns=['Dt Nasc.', 'Dt. Nasc', 'Dt Nasc'], errors='ignore')
+    return final
+
+final = merge_date_columns(final)
 
 #%%
 
-final['Dt Nascimento'] = final['Dt Nascimento'].fillna('')+final['Dt. Nasc'].fillna('')
-del final['Dt. Nasc']
-del final['Dt Nasc']
-print(final.columns)
+# Função para mesclar colunas de marcas e melhor
+def merge_marca_columns(final):
+    final['Marca'] = final['Marca'].combine_first(final['Melhor'])
+    final = final.drop(columns=['Melhor'], errors='ignore')
+    return final
+
+final = merge_marca_columns(final)
 
 #%%
-final.to_csv('final.csv')
+
+# Função para criar gráfico de frequência das classificações funcionais separado por sexo
+def plot_classification_frequency(final):
+    classification_counts = final.groupby(['classe', 'sexo']).size().unstack().fillna(0)
+    classification_counts.plot(kind='bar', figsize=(12, 8))
+    plt.title('Frequência das Classificações Esportivas por Sexo')
+    plt.xlabel('Classificação Esportiva')
+    plt.ylabel('Frequência')
+    plt.xticks(rotation=45)
+    plt.legend(title='Sexo')
+    plt.tight_layout()
+    plt.savefig('classification_frequency_by_gender.png')
+    plt.show()
+
+# Criar o gráfico de frequência
+plot_classification_frequency(final)
+
+#%%
+# Função para criar gráfico de frequência com base no ano de nascimento
+def plot_birth_year_frequency(final):
+    final['Ano Nascimento'] = pd.to_datetime(final['Dt Nascimento'], errors='coerce').dt.year
+    birth_year_counts = final['Ano Nascimento'].value_counts().sort_index()
+    plt.figure(figsize=(12, 8))
+    birth_year_counts.plot(kind='bar')
+    plt.title('Frequência por Ano de Nascimento')
+    plt.xlabel('Ano de Nascimento')
+    plt.ylabel('Frequência')
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+    plt.savefig('birth_year_frequency.png')
+    plt.show()
+
+# Criar o gráfico de frequência por ano de nascimento
+plot_birth_year_frequency(final)
+
+#%%
+final.to_csv('final.csv')[ ]
 final.info()
+
+# %%
