@@ -20,7 +20,7 @@ def extrair_linha(texto, palavras_chave):
     return None  # Retorna None se nenhuma linha for encontrada
 
 #%%
-
+print('oi')
 # Carregar as palavras-chave
 palavras_chave = pd.read_csv("valores_unicos_provas.csv")['Provas'].tolist()
 
