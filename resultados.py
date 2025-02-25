@@ -43,7 +43,6 @@ for file in pdfs:
         total = len(pdf.pages)
         
         for i in tqdm(range(1, len(pdf.pages))):
-        #for i in tqdm(range(9, 13)):
             try:
                 # Selecionar a página
                 page = pdf.pages[i]
@@ -69,14 +68,11 @@ for file in pdfs:
                                 df["sexo"] = categoria[1]
                                 df["classe"] = categoria[2]
                                 df["idade"] = categoria[3]
-                                #df["data_oficial"] = categoria[4]
                                 
                                 # Acumular os dados
                                 if "" in list(df.columns):
                                     del df['']
                                     
-                                #print(df.columns)
-                                #print("debug")
                                 df = df.reset_index(drop=True)
                                 final = final.reset_index(drop=True)
                                 final = pd.concat([final, df], ignore_index=True)
